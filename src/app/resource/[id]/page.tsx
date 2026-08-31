@@ -7,7 +7,7 @@ import { SaveButton } from "@/components/SaveButton";
 const TYPE_LABELS: Record<string, string> = {
   article: "Article",
   link: "Link",
-  pdf: "PDF",
+  file: "File",
   video: "Video",
 };
 

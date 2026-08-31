@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { ResourceCard } from "@/components/ResourceCard";
 import type { ResourceType } from "@/lib/supabase/types";
 
-const RESOURCE_TYPES: ResourceType[] = ["article", "link", "pdf", "video"];
+const RESOURCE_TYPES: ResourceType[] = ["article", "link", "file", "video"];
 
 export default async function CategoryPage({
   params,

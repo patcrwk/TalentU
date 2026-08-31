@@ -6,7 +6,12 @@ import { createClient } from "@/lib/supabase/client";
 import { createResource, updateResource, type ResourceInput } from "@/app/admin/resources/actions";
 import type { Category, Resource, ResourceType } from "@/lib/supabase/types";
 
-const RESOURCE_TYPES: ResourceType[] = ["article", "link", "pdf", "video"];
+const RESOURCE_TYPES: ResourceType[] = ["article", "link", "file", "video"];
+
+// Covers the content types called out in the brief: PDFs, Office docs
+// (templates, seminar slides), and common images.
+const UPLOADABLE_FILE_TYPES =
+  "application/pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,image/png,image/jpeg,image/webp";
 
 export function ResourceForm({
   categories,
@@ -159,12 +164,14 @@ export function ResourceForm({
         </div>
       )}
 
-      {values.resource_type === "pdf" && (
+      {values.resource_type === "file" && (
         <div>
-          <label className="block text-sm font-medium text-brand-navy">PDF file</label>
+          <label className="block text-sm font-medium text-brand-navy">
+            File (PDF, Word, PowerPoint, Excel, or image)
+          </label>
           <input
             type="file"
-            accept="application/pdf"
+            accept={UPLOADABLE_FILE_TYPES}
             onChange={(e) => {
               const file = e.target.files?.[0];
               if (file) handleFileUpload(file);

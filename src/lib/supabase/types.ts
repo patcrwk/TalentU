@@ -1,6 +1,6 @@
 export type UserRole = "admin" | "team_member";
 
-export type ResourceType = "article" | "link" | "pdf" | "video";
+export type ResourceType = "article" | "link" | "file" | "video";
 
 export type AppUser = {
   id: string;

@@ -75,7 +75,8 @@ The migration is split into `0001_init.sql` (core schema/RLS) and `0002_storage.
 
 ## Known deviations from the spec's literal schema
 
-- `resources.file_alt_text` (nullable) was added beyond the spec's data model to satisfy the non-functional requirement "alt text fields on any image upload." Only used for `pdf`-type resources today.
+- `resources.file_alt_text` (nullable) was added beyond the spec's data model to satisfy the non-functional requirement "alt text fields on any image upload." Only used for `file`-type resources today.
+- The `resource_type` enum value the spec called `pdf` is named `file` (migration `0003_broaden_file_type.sql`) — the upload accepts PDF, Word, PowerPoint, Excel, and images (`UPLOADABLE_FILE_TYPES` in `ResourceForm.tsx`), matching the real content types in the brief (templates, seminar slides, books), not just PDFs.
 - `video` resources use `external_url` (e.g. a YouTube/Vimeo link) rather than a Storage upload — no video hosting/transcoding was in scope, and linking out is the sane MVP choice for a small operator.
 
 ## Content entry

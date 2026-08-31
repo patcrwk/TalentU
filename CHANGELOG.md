@@ -18,3 +18,9 @@
 
 - Replaced the placeholder brand palette with real colors pixel-sampled from the client's brief (sauce packet art). Core red/white/navy confirmed; four sauces mapped to the four categories; Sriracha green held in reserve. See [VISUAL_IDENTITY.md](./VISUAL_IDENTITY.md).
 - Updated `globals.css` tokens accordingly; no component code changed since colors were already abstracted behind CSS custom properties.
+
+## 2026-08-31 (post-deploy fixes)
+
+- Deployed to Vercel; fixed an Internal Server Error caused by missing env vars and the Node.js runtime defaulting below the version Supabase's client libraries require.
+- Added a "Change password" flow (`/account`) — any signed-in user can set a new password from their own session, since admin-created accounts start on an admin-issued temporary one and there was no way to change it.
+- Broadened the `file` resource type (renamed from `pdf`, migration `0003_broaden_file_type.sql`) to accept PDF, Word, PowerPoint, Excel, and image uploads — the original PDF-only restriction didn't match the real content types in the brief (templates, seminar slides, books).

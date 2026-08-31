@@ -17,9 +17,9 @@ categories                          -- fixed 4 rows, seeded by the migration
 resources
   id, category_id (FK -> categories)
   title, description, content        -- content is markdown, rendered via react-markdown
-  resource_type                      -- enum: article | link | pdf | video
+  resource_type                      -- enum: article | link | file | video
   external_url                       -- used by link + video
-  file_url, file_alt_text            -- used by pdf (Supabase Storage, bucket "resource-files")
+  file_url, file_alt_text            -- used by file (Supabase Storage, bucket "resource-files"; PDF/Word/PowerPoint/Excel/image)
   is_featured, is_published
   created_by (FK -> users), created_at, updated_at
 
@@ -49,6 +49,7 @@ Row-level security is on for every table. Key rules:
 | `/library/[category]` | Signed-in | Resources in a category; `?q=` search, `?type=` filter |
 | `/resource/[id]` | Signed-in | Resource detail + save/unsave |
 | `/my-growth` | Signed-in | Saved resources + goal notes CRUD |
+| `/account` | Signed-in | Change password |
 | `/admin` | Admin | Dashboard (counts) |
 | `/admin/resources` | Admin | List, publish/feature toggles |
 | `/admin/resources/new` | Admin | Create |

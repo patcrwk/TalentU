@@ -26,7 +26,12 @@ export async function Nav() {
                   Admin
                 </Link>
               )}
-              <span className="hidden text-white/60 sm:inline">{user.display_name}</span>
+              <Link
+                href="/account"
+                className="hidden text-white/60 hover:text-white sm:inline"
+              >
+                {user.display_name}
+              </Link>
               <SignOutButton />
             </>
           )}

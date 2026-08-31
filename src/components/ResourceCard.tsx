@@ -4,7 +4,7 @@ import type { Resource } from "@/lib/supabase/types";
 const TYPE_LABELS: Record<Resource["resource_type"], string> = {
   article: "Article",
   link: "Link",
-  pdf: "PDF",
+  file: "File",
   video: "Video",
 };
 
