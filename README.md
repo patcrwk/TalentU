@@ -68,4 +68,5 @@ Node.js 22+ is required (Supabase's client libraries declare it as a minimum). I
 
 - [CLAUDE.md](./CLAUDE.md) — context for working in this repo, brand system status, scope boundary
 - [ARCHITECTURE.md](./ARCHITECTURE.md) — data model, route map, auth flow
+- [VISUAL_IDENTITY.md](./VISUAL_IDENTITY.md) — brand palette source and rationale
 - [CHANGELOG.md](./CHANGELOG.md) — dated build log

@@ -11,3 +11,10 @@
 - Placeholder brand palette (red/navy/cream) applied site-wide, flagged in CLAUDE.md pending final client assets.
 - `CLAUDE.md`, `ARCHITECTURE.md`, `README.md` written.
 - Split the migration into `0001_init.sql` (schema/RLS) and `0002_storage.sql` (bucket) after hitting `storage.buckets does not exist` on a brand new Supabase project — Storage provisions lazily on first dashboard visit. Documented the workaround in README and CLAUDE.md.
+- Connected the real Supabase project, ran both migrations, created the first admin account, and verified the full flow end-to-end (login, admin CRUD, publish/feature toggles, save, goal notes, account creation) against live data.
+- Renamed `middleware.ts` to `src/proxy.ts` per Next.js 16's deprecation of the middleware file convention (ran the official codemod).
+
+## 2026-08-31 (visual identity)
+
+- Replaced the placeholder brand palette with real colors pixel-sampled from the client's brief (sauce packet art). Core red/white/navy confirmed; four sauces mapped to the four categories; Sriracha green held in reserve. See [VISUAL_IDENTITY.md](./VISUAL_IDENTITY.md).
+- Updated `globals.css` tokens accordingly; no component code changed since colors were already abstracted behind CSS custom properties.

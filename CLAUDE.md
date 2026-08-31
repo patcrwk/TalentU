@@ -48,9 +48,9 @@ supabase/
 - Root `middleware.ts` (delegates to `lib/supabase/middleware.ts`) refreshes the session on every request and gates **every route except `/login`** — this is an internal staff tool, so signed-out visitors are redirected to `/login` everywhere, not just on `/admin`. It additionally checks `public.users.role` for `/admin/*` and bounces non-admins to `/`.
 - Row-level security enforces the same rules at the database layer independent of middleware (see migration) — `public.is_admin()` is a `SECURITY DEFINER` function so admin-checking policies don't recurse into RLS on `users` itself.
 
-## Brand system — placeholder, pending client assets
+## Brand system — confirmed
 
-Red/navy/cream palette in `src/app/globals.css` (`--color-brand-*`) is a **placeholder**. Exact hex values are not yet confirmed by the client. The four category color blocks (`--color-category-*`) are loosely sauce-inspired guesses, mapped by category slug in `src/lib/categoryColors.ts` — not stored in the DB, since the categories themselves are fixed for MVP. Swap both once real brand assets arrive; nothing else should need to change.
+Palette in `src/app/globals.css` (`--color-brand-*`, `--color-category-*`) is sampled from the client's own brief, not a placeholder. See [VISUAL_IDENTITY.md](./VISUAL_IDENTITY.md) for the source, exact values, and rationale. The four category color blocks are mapped by category slug in `src/lib/categoryColors.ts` — not stored in the DB, since the categories themselves are fixed for MVP.
 
 ## Scope boundary — do not build these without a separate agreement
 

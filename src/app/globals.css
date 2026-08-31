@@ -2,22 +2,22 @@
 @plugin "@tailwindcss/typography";
 
 :root {
-  --background: #fffaf6;
-  --foreground: #201a17;
+  --background: #fbf6ef;
+  --foreground: #211a16;
 
-  /* Brand placeholder palette — pending final brand assets from the client.
-     See CLAUDE.md "Brand system" for details. */
-  --color-brand-red: #c8102e;
-  --color-brand-red-dark: #9c0c23;
+  /* Confirmed brand palette, sampled from the client's sauce-packet brief.
+     See VISUAL_IDENTITY.md for the source and rationale. */
+  --color-brand-red: #c10827;
+  --color-brand-red-dark: #970620;
   --color-brand-navy: #1b2a4a;
   --color-brand-navy-dark: #121d33;
-  --color-brand-cream: #fffaf6;
+  --color-brand-cream: #fbf6ef;
 
-  /* Sauce-inspired category accents (fixed 4 categories, mapped by slug in code). */
-  --color-category-financial: #1b2a4a;
-  --color-category-self-help: #d4a017;
-  --color-category-relational: #c97b4a;
-  --color-category-leadership-development: #c8102e;
+  /* Sauce-accent category colors (fixed 4 categories, mapped by slug in code). */
+  --color-category-financial: #2e9fb8; /* Ranch */
+  --color-category-self-help: #e8a23c; /* Honey Mustard */
+  --color-category-relational: #8b3e6b; /* Polynesian */
+  --color-category-leadership-development: #d6480f; /* Buffalo */
 }
 
 @theme inline {
