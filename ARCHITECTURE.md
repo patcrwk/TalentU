@@ -44,7 +44,9 @@ Row-level security is on for every table. Key rules:
 | Route | Access | Purpose |
 |---|---|---|
 | `/` | Signed-in | Featured resources, links into the 4 categories |
-| `/login` | Public | Only unauthenticated route |
+| `/login` | Public | Sign in |
+| `/forgot-password` | Public | Request a password-reset email |
+| `/reset-password` | Public* | Set a new password from the emailed link (*public route, but only functions with a valid recovery token — see Auth flow) |
 | `/library` | Signed-in | Browse the 4 categories |
 | `/library/[category]` | Signed-in | Resources in a category; `?q=` search, `?type=` filter |
 | `/resource/[id]` | Signed-in | Resource detail + save/unsave |
@@ -61,8 +63,10 @@ Row-level security is on for every table. Key rules:
 
 1. Admin creates an account from `/admin/users` → server action `createTeamMember` uses the **service-role Supabase client** to call `auth.admin.createUser()` with a generated temp password, then inserts the matching `public.users` profile row. The temp password is shown once in the UI for the admin to relay directly (no outbound email dependency for MVP).
 2. User signs in at `/login` (email + password) via the browser Supabase client (`signInWithPassword`), which sets Supabase's auth cookies.
-3. Root `middleware.ts` runs on every request: refreshes the session, redirects signed-out visitors to `/login` (every route except `/login` itself requires auth), and additionally checks `public.users.role` for `/admin/*`, bouncing non-admins to `/`.
+3. Root `proxy.ts` (the Next.js 16 name for what used to be `middleware.ts`) runs on every request: refreshes the session, redirects signed-out visitors to `/login` (every route requires auth except `/login`, `/forgot-password`, and `/reset-password`), and additionally checks `public.users.role` for `/admin/*`, bouncing non-admins to `/`.
 4. Server components/actions read the user via `lib/supabase/server.ts`'s cookie-based client; `lib/supabase/auth.ts` exposes `getCurrentAppUser()` and `requireAdmin()` for convenience. RLS enforces the same boundaries independently at the DB layer.
+5. **Password change (signed in):** `/account` calls `supabase.auth.updateUser({ password })` from the browser client — no old-password confirmation needed since the active session already proves identity.
+6. **Password reset (signed out):** `/forgot-password` calls `supabase.auth.resetPasswordForEmail(email, { redirectTo: ".../reset-password" })`, which emails a recovery link (via Supabase's built-in auth email service — no custom SMTP configured). The link's token lives in the URL hash, so it never reaches the server; `/reset-password` is public in `proxy.ts` for exactly this reason, and its client component waits for the Supabase JS client to detect the hash, fire a `PASSWORD_RECOVERY` auth event, and establish a session, before showing the new-password form. The redirect URL must be allowlisted per-environment in Supabase (see README step 6).
 
 ## Mutations
 

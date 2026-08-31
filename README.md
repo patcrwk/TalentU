@@ -60,7 +60,14 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000).
 
-### 6. Deploy to Vercel
+### 6. Allow the password-reset redirect URL
+
+"Forgot password" (`/forgot-password` → emailed link → `/reset-password`) needs its redirect URL allowlisted or Supabase won't send a working link. In **Supabase Dashboard > Authentication > URL Configuration > Redirect URLs**, add:
+
+- `http://localhost:3000/reset-password` (local dev)
+- `https://<your-vercel-domain>/reset-password` (production — add this once you know the deployed domain, and again for any custom domain later)
+
+### 7. Deploy to Vercel
 
 Node.js 22+ is required (Supabase's client libraries declare it as a minimum). In Vercel, set **Project Settings > General > Node.js Version** to 22.x, then set the three environment variables above in **Project Settings > Environment Variables** and deploy.
 

@@ -37,8 +37,13 @@ export async function updateSession(request: NextRequest) {
 
   const path = request.nextUrl.pathname;
   // The whole app is an internal staff tool with no public signup, so every
-  // route requires a signed-in account except the login page itself.
-  const isPublic = path === "/login";
+  // route requires a signed-in account except the login/password-reset
+  // pages. /reset-password specifically must stay public: the visitor
+  // arrives from an emailed link with a recovery token in the URL hash
+  // (never sent to the server), so no session cookie exists on this first
+  // server-rendered request — the client-side Supabase JS exchanges the
+  // token into a session after the page loads.
+  const isPublic = path === "/login" || path === "/forgot-password" || path === "/reset-password";
 
   if (!user && !isPublic) {
     const loginUrl = new URL("/login", request.url);
