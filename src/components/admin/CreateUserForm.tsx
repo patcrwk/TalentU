@@ -3,16 +3,26 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createTeamMember } from "@/app/admin/users/actions";
-import type { UserRole } from "@/lib/supabase/types";
+import type { Group, UserRole } from "@/lib/supabase/types";
 
-export function CreateUserForm() {
+export function CreateUserForm({ groups }: { groups: Group[] }) {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [role, setRole] = useState<UserRole>("team_member");
+  const [groupIds, setGroupIds] = useState<Set<string>>(new Set());
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<{ email: string; tempPassword: string } | null>(null);
+
+  function toggleGroup(groupId: string) {
+    setGroupIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(groupId)) next.delete(groupId);
+      else next.add(groupId);
+      return next;
+    });
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -21,11 +31,17 @@ export function CreateUserForm() {
     setResult(null);
 
     try {
-      const res = await createTeamMember({ email, display_name: displayName, role });
+      const res = await createTeamMember({
+        email,
+        display_name: displayName,
+        role,
+        group_ids: [...groupIds],
+      });
       setResult(res);
       setEmail("");
       setDisplayName("");
       setRole("team_member");
+      setGroupIds(new Set());
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to create account.");
@@ -67,6 +83,24 @@ export function CreateUserForm() {
             <option value="team_member">Team member</option>
             <option value="admin">Admin</option>
           </select>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-brand-navy">Groups</label>
+          <div className="mt-1 max-h-32 space-y-1 overflow-y-auto rounded-lg border border-black/15 p-2">
+            {groups.map((group) => (
+              <label key={group.id} className="flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={groupIds.has(group.id)}
+                  onChange={() => toggleGroup(group.id)}
+                />
+                {group.name}
+              </label>
+            ))}
+            {groups.length === 0 && (
+              <p className="text-sm text-black/40">No groups yet — create one from Groups.</p>
+            )}
+          </div>
         </div>
 
         {error && (

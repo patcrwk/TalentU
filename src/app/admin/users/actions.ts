@@ -19,6 +19,7 @@ export async function createTeamMember(input: {
   email: string;
   display_name: string;
   role: UserRole;
+  group_ids: string[];
 }) {
   await requireAdmin();
   const serviceClient = createServiceRoleClient();
@@ -45,7 +46,15 @@ export async function createTeamMember(input: {
     throw new Error(profileError.message);
   }
 
+  if (input.group_ids.length > 0) {
+    const { error: groupError } = await serviceClient
+      .from("group_members")
+      .insert(input.group_ids.map((group_id) => ({ group_id, user_id: created.user.id })));
+    if (groupError) throw new Error(groupError.message);
+  }
+
   revalidatePath("/admin/users");
+  revalidatePath("/admin/groups");
   return { email: input.email.trim(), tempPassword };
 }
 
@@ -56,4 +65,18 @@ export async function updateUserRole(userId: string, role: UserRole) {
   const { error } = await supabase.from("users").update({ role }).eq("id", userId);
   if (error) throw new Error(error.message);
   revalidatePath("/admin/users");
+}
+
+export async function deleteTeamMember(userId: string) {
+  const admin = await requireAdmin();
+  if (userId === admin.id) {
+    throw new Error("You can't remove your own account.");
+  }
+
+  const serviceClient = createServiceRoleClient();
+  const { error } = await serviceClient.auth.admin.deleteUser(userId);
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/admin/users");
+  revalidatePath("/admin/groups");
 }

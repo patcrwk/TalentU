@@ -62,3 +62,24 @@ export async function setGroupMembers(groupId: string, userIds: string[]) {
   revalidatePath(`/admin/groups/${groupId}`);
   revalidatePath("/admin/resources");
 }
+
+export async function setUserGroups(userId: string, groupIds: string[]) {
+  await requireAdmin();
+  const supabase = await createClient();
+
+  const { error: deleteError } = await supabase
+    .from("group_members")
+    .delete()
+    .eq("user_id", userId);
+  if (deleteError) throw new Error(deleteError.message);
+
+  if (groupIds.length > 0) {
+    const { error: insertError } = await supabase
+      .from("group_members")
+      .insert(groupIds.map((group_id) => ({ group_id, user_id: userId })));
+    if (insertError) throw new Error(insertError.message);
+  }
+
+  revalidatePath("/admin/users");
+  revalidatePath("/admin/groups");
+}
