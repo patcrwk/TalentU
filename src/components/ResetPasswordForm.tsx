@@ -1,13 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
 type Status = "checking" | "ready" | "invalid" | "done";
 
 export function ResetPasswordForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [status, setStatus] = useState<Status>("checking");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -16,17 +17,35 @@ export function ResetPasswordForm() {
 
   useEffect(() => {
     const supabase = createClient();
+    let cancelled = false;
 
-    // The reset-link redirect lands here with a recovery token in the URL;
-    // the browser client exchanges it for a session and fires this event.
+    // Preferred path: the email template links here with ?token_hash=...
+    // (not straight to Supabase's own /auth/v1/verify link) specifically so
+    // that email-scanner prefetching of the link in the inbox doesn't burn
+    // the one-time token before the user actually clicks it — verifyOtp only
+    // runs when this page's JS actually executes in a real browser.
+    const tokenHash = searchParams.get("token_hash");
+    const type = searchParams.get("type");
+
+    async function verifyFromTokenHash() {
+      if (!tokenHash || type !== "recovery") return false;
+      const { error } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type: "recovery" });
+      if (!cancelled) setStatus(error ? "invalid" : "ready");
+      return true;
+    }
+
+    // Fallback path: the older hash-fragment flow (Supabase's default
+    // ConfirmationURL template), kept for compatibility until the email
+    // template is switched over.
     const { data: listener } = supabase.auth.onAuthStateChange((event) => {
       if (event === "PASSWORD_RECOVERY") setStatus("ready");
     });
 
-    // Covers the case where the session was already established by the
-    // time this component mounts (event fires before the listener attaches).
-    supabase.auth.getSession().then(({ data }) => {
-      if (data.session) setStatus((prev) => (prev === "checking" ? "ready" : prev));
+    verifyFromTokenHash().then((handled) => {
+      if (handled || cancelled) return;
+      supabase.auth.getSession().then(({ data }) => {
+        if (!cancelled && data.session) setStatus((prev) => (prev === "checking" ? "ready" : prev));
+      });
     });
 
     const timeout = setTimeout(() => {
@@ -34,10 +53,11 @@ export function ResetPasswordForm() {
     }, 3000);
 
     return () => {
+      cancelled = true;
       listener.subscription.unsubscribe();
       clearTimeout(timeout);
     };
-  }, []);
+  }, [searchParams]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
