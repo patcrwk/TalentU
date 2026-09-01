@@ -2,11 +2,17 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { CategoryCard } from "@/components/CategoryCard";
 import { ResourceCard } from "@/components/ResourceCard";
+import { getAssignedResourceIds } from "@/lib/supabase/assignments";
+import type { Resource } from "@/lib/supabase/types";
 
 export default async function HomePage() {
   const supabase = await createClient();
 
-  const [{ data: categories }, { data: featured }] = await Promise.all([
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const [{ data: categories }, { data: featured }, assignedIds] = await Promise.all([
     supabase.from("categories").select("*").order("sort_order"),
     supabase
       .from("resources")
@@ -15,7 +21,20 @@ export default async function HomePage() {
       .eq("is_featured", true)
       .order("updated_at", { ascending: false })
       .limit(6),
+    user ? getAssignedResourceIds(supabase, user.id) : Promise.resolve(new Set<string>()),
   ]);
+
+  let assignedResources: Resource[] = [];
+  if (assignedIds.size > 0) {
+    const { data } = await supabase
+      .from("resources")
+      .select("*")
+      .in("id", [...assignedIds])
+      .eq("is_published", true)
+      .order("updated_at", { ascending: false })
+      .limit(6);
+    assignedResources = data ?? [];
+  }
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10">
@@ -41,12 +60,27 @@ export default async function HomePage() {
         </div>
       </section>
 
+      {assignedResources.length > 0 && (
+        <section className="mt-10">
+          <h2 className="text-xl font-bold text-brand-navy">Assigned to you</h2>
+          <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {assignedResources.map((resource) => (
+              <ResourceCard key={resource.id} resource={resource} isAssigned />
+            ))}
+          </div>
+        </section>
+      )}
+
       {featured && featured.length > 0 && (
         <section className="mt-10">
           <h2 className="text-xl font-bold text-brand-navy">Featured resources</h2>
           <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {featured.map((resource) => (
-              <ResourceCard key={resource.id} resource={resource} />
+              <ResourceCard
+                key={resource.id}
+                resource={resource}
+                isAssigned={assignedIds.has(resource.id)}
+              />
             ))}
           </div>
         </section>

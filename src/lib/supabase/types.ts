@@ -49,6 +49,27 @@ export type GoalNote = {
   updated_at: string;
 }
 
+export type Group = {
+  id: string;
+  name: string;
+  description: string | null;
+  created_at: string;
+}
+
+export type GroupMember = {
+  group_id: string;
+  user_id: string;
+}
+
+export type ResourceAssignment = {
+  id: string;
+  resource_id: string;
+  user_id: string | null;
+  group_id: string | null;
+  created_by: string | null;
+  created_at: string;
+}
+
 export type Database = {
   public: {
     Tables: {
@@ -97,6 +118,40 @@ export type Database = {
         Insert: Partial<GoalNote> & { user_id: string; note_text: string };
         Update: Partial<GoalNote>;
         Relationships: [];
+      };
+      groups: {
+        Row: Group;
+        Insert: Partial<Group> & { name: string };
+        Update: Partial<Group>;
+        Relationships: [];
+      };
+      group_members: {
+        Row: GroupMember;
+        Insert: GroupMember;
+        Update: Partial<GroupMember>;
+        Relationships: [
+          {
+            foreignKeyName: "group_members_group_id_fkey";
+            columns: ["group_id"];
+            isOneToOne: false;
+            referencedRelation: "groups";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
+      resource_assignments: {
+        Row: ResourceAssignment;
+        Insert: Partial<ResourceAssignment> & { resource_id: string };
+        Update: Partial<ResourceAssignment>;
+        Relationships: [
+          {
+            foreignKeyName: "resource_assignments_resource_id_fkey";
+            columns: ["resource_id"];
+            isOneToOne: false;
+            referencedRelation: "resources";
+            referencedColumns: ["id"];
+          }
+        ];
       };
     };
     Views: Record<string, never>;

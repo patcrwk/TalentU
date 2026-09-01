@@ -27,6 +27,7 @@ src/
       resources/          list, new, [id] edit; actions.ts has the server actions
       categories/         edit fixed categories; actions.ts
       users/               create accounts, reassign roles; actions.ts
+      groups/              create/edit groups, manage membership; actions.ts
   components/             shared UI (cards, nav, forms)
     admin/                admin-only form/row components
   lib/
@@ -36,9 +37,11 @@ src/
       middleware.ts        session refresh + route protection, used by root middleware.ts
       auth.ts             getCurrentAppUser() / requireAdmin() helpers
       types.ts            hand-written DB types (no generated types — schema is small and stable)
+      assignments.ts       getAssignedResourceIds() — resources assigned to a user directly or via group
     categoryColors.ts     slug -> Tailwind class for the 4 fixed category color blocks
 supabase/
   migrations/0001_init.sql  full schema, RLS policies, seed categories, storage bucket
+  migrations/0004_groups_and_assignments.sql  groups, group_members, resource_assignments + RLS
 ```
 
 ## Auth model
@@ -69,6 +72,10 @@ Every item below is a priced, planned future phase. Flag it instead of building 
 - Structured goal tracking (due dates, progress %, formal assessments) — `goal_notes` is intentionally just free text
 
 When scope is ambiguous, build the smaller version and note the larger one here rather than assuming it's wanted.
+
+### Scope note: groups + resource assignment (2026-09-01)
+
+Groups (`public.groups`/`group_members`) and per-user/per-group resource assignment (`public.resource_assignments`) were built at the client's request as **foundational to MVP usability**, not part of the original signed Phase 0+1 line items — flag this with Caleb/CR-WK for the contract/billing conversation. The feature is additive by design: assignment only prioritizes/surfaces resources (an "Assigned to you" section on the home page, assigned-first ordering + a "For you" badge in category views) — it never hides a resource from anyone, so it doesn't conflict with the "everything visible" requirement. Admin manages groups at `/admin/groups` and assigns resources to users/groups from the resource form. See migration `0004_groups_and_assignments.sql` — **apply it via the Supabase SQL editor before using this feature**; until then the app degrades gracefully (no assigned-content sections render, existing pages are unaffected) but the admin Groups UI will error on write.
 
 ## Supabase setup gotcha
 

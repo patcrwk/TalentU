@@ -8,7 +8,13 @@ const TYPE_LABELS: Record<Resource["resource_type"], string> = {
   video: "Video",
 };
 
-export function ResourceCard({ resource }: { resource: Resource }) {
+export function ResourceCard({
+  resource,
+  isAssigned,
+}: {
+  resource: Resource;
+  isAssigned?: boolean;
+}) {
   return (
     <Link
       href={`/resource/${resource.id}`}
@@ -18,6 +24,11 @@ export function ResourceCard({ resource }: { resource: Resource }) {
         <span className="rounded-full bg-brand-navy/10 px-2.5 py-0.5 text-xs font-semibold text-brand-navy">
           {TYPE_LABELS[resource.resource_type]}
         </span>
+        {isAssigned && (
+          <span className="rounded-full bg-brand-navy px-2.5 py-0.5 text-xs font-semibold text-white">
+            For you
+          </span>
+        )}
         {resource.is_featured && (
           <span className="rounded-full bg-brand-red/10 px-2.5 py-0.5 text-xs font-semibold text-brand-red">
             Featured

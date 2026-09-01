@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import { createClient } from "@/lib/supabase/server";
 import { SaveButton } from "@/components/SaveButton";
+import { getAssignedResourceIds } from "@/lib/supabase/assignments";
 
 const TYPE_LABELS: Record<string, string> = {
   article: "Article",
@@ -41,6 +42,10 @@ export default async function ResourceDetailPage({
         .maybeSingle()
     : { data: null };
 
+  const isAssigned = user
+    ? (await getAssignedResourceIds(supabase, user.id)).has(resource.id)
+    : false;
+
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
       {category && (
@@ -56,6 +61,11 @@ export default async function ResourceDetailPage({
         <span className="rounded-full bg-brand-navy/10 px-2.5 py-0.5 text-xs font-semibold text-brand-navy">
           {TYPE_LABELS[resource.resource_type]}
         </span>
+        {isAssigned && (
+          <span className="rounded-full bg-brand-navy px-2.5 py-0.5 text-xs font-semibold text-white">
+            For you
+          </span>
+        )}
         {resource.is_featured && (
           <span className="rounded-full bg-brand-red/10 px-2.5 py-0.5 text-xs font-semibold text-brand-red">
             Featured

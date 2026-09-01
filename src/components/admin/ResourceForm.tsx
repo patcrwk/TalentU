@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { createResource, updateResource, type ResourceInput } from "@/app/admin/resources/actions";
-import type { Category, Resource, ResourceType } from "@/lib/supabase/types";
+import type { AppUser, Category, Group, Resource, ResourceType } from "@/lib/supabase/types";
 
 const RESOURCE_TYPES: ResourceType[] = ["article", "link", "file", "video"];
 
@@ -15,10 +15,18 @@ const UPLOADABLE_FILE_TYPES =
 
 export function ResourceForm({
   categories,
+  users,
+  groups,
   resource,
+  initialAssignedUserIds,
+  initialAssignedGroupIds,
 }: {
   categories: Category[];
+  users: AppUser[];
+  groups: Group[];
   resource?: Resource;
+  initialAssignedUserIds?: string[];
+  initialAssignedGroupIds?: string[];
 }) {
   const router = useRouter();
   const [values, setValues] = useState<ResourceInput>({
@@ -32,6 +40,8 @@ export function ResourceForm({
     file_alt_text: resource?.file_alt_text ?? "",
     is_featured: resource?.is_featured ?? false,
     is_published: resource?.is_published ?? false,
+    assigned_user_ids: initialAssignedUserIds ?? [],
+    assigned_group_ids: initialAssignedGroupIds ?? [],
   });
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -39,6 +49,16 @@ export function ResourceForm({
 
   function set<K extends keyof ResourceInput>(key: K, value: ResourceInput[K]) {
     setValues((prev) => ({ ...prev, [key]: value }));
+  }
+
+  function toggleAssignment(key: "assigned_user_ids" | "assigned_group_ids", id: string) {
+    setValues((prev) => {
+      const current = prev[key];
+      const next = current.includes(id)
+        ? current.filter((existing) => existing !== id)
+        : [...current, id];
+      return { ...prev, [key]: next };
+    });
   }
 
   async function handleFileUpload(file: File) {
@@ -193,6 +213,52 @@ export function ResourceForm({
           />
         </div>
       )}
+
+      <div>
+        <label className="block text-sm font-medium text-brand-navy">
+          Assign to (curated — still visible to everyone in the library)
+        </label>
+        <div className="mt-2 grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-black/40">Groups</p>
+            <div className="mt-1 max-h-40 space-y-1 overflow-y-auto rounded-lg border border-black/15 p-2">
+              {groups.map((group) => (
+                <label key={group.id} className="flex items-center gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={values.assigned_group_ids.includes(group.id)}
+                    onChange={() => toggleAssignment("assigned_group_ids", group.id)}
+                  />
+                  {group.name}
+                </label>
+              ))}
+              {groups.length === 0 && (
+                <p className="text-sm text-black/40">No groups yet.</p>
+              )}
+            </div>
+          </div>
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-black/40">
+              Individuals
+            </p>
+            <div className="mt-1 max-h-40 space-y-1 overflow-y-auto rounded-lg border border-black/15 p-2">
+              {users.map((user) => (
+                <label key={user.id} className="flex items-center gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={values.assigned_user_ids.includes(user.id)}
+                    onChange={() => toggleAssignment("assigned_user_ids", user.id)}
+                  />
+                  {user.display_name}
+                </label>
+              ))}
+              {users.length === 0 && (
+                <p className="text-sm text-black/40">No team members yet.</p>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
 
       <div className="flex gap-6">
         <label className="flex items-center gap-2 text-sm font-medium text-brand-navy">

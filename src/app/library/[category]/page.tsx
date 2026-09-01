@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { ResourceCard } from "@/components/ResourceCard";
+import { getAssignedResourceIds } from "@/lib/supabase/assignments";
 import type { ResourceType } from "@/lib/supabase/types";
 
 const RESOURCE_TYPES: ResourceType[] = ["article", "link", "file", "video"];
@@ -15,6 +16,10 @@ export default async function CategoryPage({
   const { category: slug } = await params;
   const { q, type } = await searchParams;
   const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   const { data: category } = await supabase
     .from("categories")
@@ -39,7 +44,15 @@ export default async function CategoryPage({
     query = query.eq("resource_type", type as ResourceType);
   }
 
-  const { data: resources } = await query;
+  const [{ data: resources }, assignedIds] = await Promise.all([
+    query,
+    user ? getAssignedResourceIds(supabase, user.id) : Promise.resolve(new Set<string>()),
+  ]);
+
+  // Curated resources surface first without hiding anything else from the library.
+  const sorted = [...(resources ?? [])].sort(
+    (a, b) => Number(assignedIds.has(b.id)) - Number(assignedIds.has(a.id))
+  );
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10">
@@ -75,12 +88,12 @@ export default async function CategoryPage({
       </form>
 
       <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {resources?.map((resource) => (
-          <ResourceCard key={resource.id} resource={resource} />
+        {sorted.map((resource) => (
+          <ResourceCard key={resource.id} resource={resource} isAssigned={assignedIds.has(resource.id)} />
         ))}
       </div>
 
-      {resources?.length === 0 && (
+      {sorted.length === 0 && (
         <p className="mt-10 text-center text-black/50">No resources match yet.</p>
       )}
     </div>

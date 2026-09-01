@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 export default async function AdminDashboardPage() {
   const supabase = await createClient();
 
-  const [{ count: resourceCount }, { count: publishedCount }, { count: userCount }] =
+  const [{ count: resourceCount }, { count: publishedCount }, { count: userCount }, { count: groupCount }] =
     await Promise.all([
       supabase.from("resources").select("*", { count: "exact", head: true }),
       supabase
@@ -12,19 +12,21 @@ export default async function AdminDashboardPage() {
         .select("*", { count: "exact", head: true })
         .eq("is_published", true),
       supabase.from("users").select("*", { count: "exact", head: true }),
+      supabase.from("groups").select("*", { count: "exact", head: true }),
     ]);
 
   const stats = [
     { label: "Total resources", value: resourceCount ?? 0, href: "/admin/resources" },
     { label: "Published resources", value: publishedCount ?? 0, href: "/admin/resources" },
     { label: "Team members", value: userCount ?? 0, href: "/admin/users" },
+    { label: "Groups", value: groupCount ?? 0, href: "/admin/groups" },
   ];
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-10">
       <h1 className="text-2xl font-bold text-brand-navy">Admin dashboard</h1>
 
-      <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {stats.map((stat) => (
           <Link
             key={stat.label}
